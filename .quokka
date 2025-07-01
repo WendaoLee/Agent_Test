@@ -1,0 +1,5 @@
+{
+  "ts": {
+    "compiler": "ts-node"
+  }
+}
