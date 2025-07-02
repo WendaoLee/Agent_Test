@@ -24,22 +24,36 @@ export default class TypeBuilder {
     
     ArticleCheckResult: ClassViewer<'ArticleCheckResult', "title" | "markdownContent">;
     
-    ArticleGenerationResult: ClassViewer<'ArticleGenerationResult', "title" | "markdownContent">;
+    ArticleGenerationResult: ClassViewer<'ArticleGenerationResult', "title" | "markdownContent" | "articleType">;
     
-    Message: ClassViewer<'Message', "role" | "content">;
+    ArticleGenerationTool: ClassViewer<'ArticleGenerationTool', "event" | "data">;
     
-    ReplyTool: ClassViewer<'ReplyTool', "response">;
+    ArticleMemorySaveEvent: ClassViewer<'ArticleMemorySaveEvent', "event" | "data">;
+    
+    ArticleOptimizeResult: ClassViewer<'ArticleOptimizeResult', "title" | "markdownContent" | "articleType">;
+    
+    EventMessage: ClassViewer<'EventMessage', "eventName" | "dataContent">;
+    
+    MemoryRetrivalTool: ClassViewer<'MemoryRetrivalTool', "event">;
+    
+    MemoryStateToolData: ClassViewer<'MemoryStateToolData', "toolName" | "dataContent">;
+    
+    RequestHumanForConfirmation: ClassViewer<'RequestHumanForConfirmation', "event" | "data">;
+    
+    RequestHumanForSatisfaction: ClassViewer<'RequestHumanForSatisfaction', "event" | "data">;
     
     Resume: ClassViewer<'Resume', "name" | "email" | "experience" | "skills">;
     
-    StopTool: ClassViewer<'StopTool', "action">;
+    RuleSet: ClassViewer<'RuleSet', "content">;
+    
+    StopEvent: ClassViewer<'StopEvent', "event" | "data">;
     
     
 
     constructor() {
         this.tb = new _TypeBuilder({
           classes: new Set([
-            "ArticleCheckResult","ArticleGenerationResult","Message","ReplyTool","Resume","StopTool",
+            "ArticleCheckResult","ArticleGenerationResult","ArticleGenerationTool","ArticleMemorySaveEvent","ArticleOptimizeResult","EventMessage","MemoryRetrivalTool","MemoryStateToolData","RequestHumanForConfirmation","RequestHumanForSatisfaction","Resume","RuleSet","StopEvent",
           ]),
           enums: new Set([
             
@@ -52,23 +66,51 @@ export default class TypeBuilder {
         ]);
         
         this.ArticleGenerationResult = this.tb.classViewer("ArticleGenerationResult", [
-          "title","markdownContent",
+          "title","markdownContent","articleType",
         ]);
         
-        this.Message = this.tb.classViewer("Message", [
-          "role","content",
+        this.ArticleGenerationTool = this.tb.classViewer("ArticleGenerationTool", [
+          "event","data",
         ]);
         
-        this.ReplyTool = this.tb.classViewer("ReplyTool", [
-          "response",
+        this.ArticleMemorySaveEvent = this.tb.classViewer("ArticleMemorySaveEvent", [
+          "event","data",
+        ]);
+        
+        this.ArticleOptimizeResult = this.tb.classViewer("ArticleOptimizeResult", [
+          "title","markdownContent","articleType",
+        ]);
+        
+        this.EventMessage = this.tb.classViewer("EventMessage", [
+          "eventName","dataContent",
+        ]);
+        
+        this.MemoryRetrivalTool = this.tb.classViewer("MemoryRetrivalTool", [
+          "event",
+        ]);
+        
+        this.MemoryStateToolData = this.tb.classViewer("MemoryStateToolData", [
+          "toolName","dataContent",
+        ]);
+        
+        this.RequestHumanForConfirmation = this.tb.classViewer("RequestHumanForConfirmation", [
+          "event","data",
+        ]);
+        
+        this.RequestHumanForSatisfaction = this.tb.classViewer("RequestHumanForSatisfaction", [
+          "event","data",
         ]);
         
         this.Resume = this.tb.classViewer("Resume", [
           "name","email","experience","skills",
         ]);
         
-        this.StopTool = this.tb.classViewer("StopTool", [
-          "action",
+        this.RuleSet = this.tb.classViewer("RuleSet", [
+          "content",
+        ]);
+        
+        this.StopEvent = this.tb.classViewer("StopEvent", [
+          "event","data",
         ]);
         
         

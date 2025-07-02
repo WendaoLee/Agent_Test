@@ -41,6 +41,10 @@
   },
   "dependencies": {
     "@boundaryml/baml": "^0.90.2",
+    "@effect/platform": "^0.87.2",
+    "@effect/platform-node": "^0.88.4",
+    "dotenv": "^17.0.1",
+    "effect": "^3.16.11",
     "openai": "^5.8.2",
     "rimraf": "^6.0.1",
     "showify": "^0.1.5",

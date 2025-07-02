@@ -20,17 +20,37 @@ import { toBamlError } from "@boundaryml/baml"
 import type { Checked, Check } from "./types.js"
 import type { partial_types } from "./partial_types.js"
 import type * as types from "./types.js"
-import type {ArticleCheckResult, ArticleGenerationResult, Message, ReplyTool, Resume, StopTool} from "./types.js"
+import type {ArticleCheckResult, ArticleGenerationResult, ArticleGenerationTool, ArticleMemorySaveEvent, ArticleOptimizeResult, EventMessage, MemoryRetrivalTool, MemoryStateToolData, RequestHumanForConfirmation, RequestHumanForSatisfaction, Resume, RuleSet, StopEvent} from "./types.js"
 import type TypeBuilder from "./type_builder.js"
 
 export class LlmResponseParser {
   constructor(private runtime: BamlRuntime, private ctxManager: BamlCtxManager) {}
 
   
+  ArticleOptimize(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry }
+  ): ArticleOptimizeResult {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.parseLlmResponse(
+        "ArticleOptimize",
+        llmResponse,
+        false,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        env,
+      ) as ArticleOptimizeResult
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
   ChatAgent(
       llmResponse: string,
       __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry }
-  ): StopTool | ReplyTool {
+  ): StopEvent | RequestHumanForConfirmation | RequestHumanForSatisfaction | ArticleGenerationTool {
     try {
       const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
       return this.runtime.parseLlmResponse(
@@ -41,7 +61,7 @@ export class LlmResponseParser {
         __baml_options__?.tb?.__tb(),
         __baml_options__?.clientRegistry,
         env,
-      ) as StopTool | ReplyTool
+      ) as StopEvent | RequestHumanForConfirmation | RequestHumanForSatisfaction | ArticleGenerationTool
     } catch (error) {
       throw toBamlError(error);
     }
@@ -107,16 +127,96 @@ export class LlmResponseParser {
     }
   }
   
+  GenerateArticleWithRuleSets(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry }
+  ): ArticleGenerationResult {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.parseLlmResponse(
+        "GenerateArticleWithRuleSets",
+        llmResponse,
+        false,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        env,
+      ) as ArticleGenerationResult
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  PromptTokenTest(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry }
+  ): string {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.parseLlmResponse(
+        "PromptTokenTest",
+        llmResponse,
+        false,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        env,
+      ) as string
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  Style2ArticleGeneration(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry }
+  ): ArticleGenerationResult {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.parseLlmResponse(
+        "Style2ArticleGeneration",
+        llmResponse,
+        false,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        env,
+      ) as ArticleGenerationResult
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
 }
 
 export class LlmStreamParser {
   constructor(private runtime: BamlRuntime, private ctxManager: BamlCtxManager) {}
 
   
+  ArticleOptimize(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry }
+  ): partial_types.ArticleOptimizeResult {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.parseLlmResponse(
+        "ArticleOptimize",
+        llmResponse,
+        true,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        env,
+      ) as partial_types.ArticleOptimizeResult
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
   ChatAgent(
       llmResponse: string,
       __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry }
-  ): ((partial_types.StopTool | null) | (partial_types.ReplyTool | null)) {
+  ): ((partial_types.StopEvent | null) | (partial_types.RequestHumanForConfirmation | null) | (partial_types.RequestHumanForSatisfaction | null) | (partial_types.ArticleGenerationTool | null)) {
     try {
       const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
       return this.runtime.parseLlmResponse(
@@ -127,7 +227,7 @@ export class LlmStreamParser {
         __baml_options__?.tb?.__tb(),
         __baml_options__?.clientRegistry,
         env,
-      ) as ((partial_types.StopTool | null) | (partial_types.ReplyTool | null))
+      ) as ((partial_types.StopEvent | null) | (partial_types.RequestHumanForConfirmation | null) | (partial_types.RequestHumanForSatisfaction | null) | (partial_types.ArticleGenerationTool | null))
     } catch (error) {
       throw toBamlError(error);
     }
@@ -181,6 +281,66 @@ export class LlmStreamParser {
       const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
       return this.runtime.parseLlmResponse(
         "GenerateArticle",
+        llmResponse,
+        true,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        env,
+      ) as partial_types.ArticleGenerationResult
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  GenerateArticleWithRuleSets(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry }
+  ): partial_types.ArticleGenerationResult {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.parseLlmResponse(
+        "GenerateArticleWithRuleSets",
+        llmResponse,
+        true,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        env,
+      ) as partial_types.ArticleGenerationResult
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  PromptTokenTest(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry }
+  ): string {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.parseLlmResponse(
+        "PromptTokenTest",
+        llmResponse,
+        true,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        env,
+      ) as string
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  Style2ArticleGeneration(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry }
+  ): partial_types.ArticleGenerationResult {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.parseLlmResponse(
+        "Style2ArticleGeneration",
         llmResponse,
         true,
         this.ctxManager.cloneContext(),

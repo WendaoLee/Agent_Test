@@ -19,7 +19,7 @@ import type { BamlRuntime, BamlCtxManager, ClientRegistry, Image, Audio } from "
 import { toBamlError, HTTPRequest } from "@boundaryml/baml"
 import type { Checked, Check } from "./types.js"
 import type * as types from "./types.js"
-import type {ArticleCheckResult, ArticleGenerationResult, Message, ReplyTool, Resume, StopTool} from "./types.js"
+import type {ArticleCheckResult, ArticleGenerationResult, ArticleGenerationTool, ArticleMemorySaveEvent, ArticleOptimizeResult, EventMessage, MemoryRetrivalTool, MemoryStateToolData, RequestHumanForConfirmation, RequestHumanForSatisfaction, Resume, RuleSet, StopEvent} from "./types.js"
 import type TypeBuilder from "./type_builder.js"
 
 type BamlCallOptions = {
@@ -32,8 +32,30 @@ export class AsyncHttpRequest {
   constructor(private runtime: BamlRuntime, private ctxManager: BamlCtxManager) {}
 
   
+  async ArticleOptimize(
+      markdownOriginalString: string,articleGenerationContent: string,articleTitle: string,articleType: string,
+      __baml_options__?: BamlCallOptions
+  ): Promise<HTTPRequest> {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return await this.runtime.buildRequest(
+        "ArticleOptimize",
+        {
+          "markdownOriginalString": markdownOriginalString,"articleGenerationContent": articleGenerationContent,"articleTitle": articleTitle,"articleType": articleType
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        false,
+        env
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
   async ChatAgent(
-      message: Message[],tone: "happy" | "sad",
+      eventMessage: EventMessage[],
       __baml_options__?: BamlCallOptions
   ): Promise<HTTPRequest> {
     try {
@@ -41,7 +63,7 @@ export class AsyncHttpRequest {
       return await this.runtime.buildRequest(
         "ChatAgent",
         {
-          "message": message,"tone": tone
+          "eventMessage": eventMessage
         },
         this.ctxManager.cloneContext(),
         __baml_options__?.tb?.__tb(),
@@ -120,14 +142,102 @@ export class AsyncHttpRequest {
     }
   }
   
+  async GenerateArticleWithRuleSets(
+      markdownOriginalString: string,dateString: string,rulesets: RuleSet[],
+      __baml_options__?: BamlCallOptions
+  ): Promise<HTTPRequest> {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return await this.runtime.buildRequest(
+        "GenerateArticleWithRuleSets",
+        {
+          "markdownOriginalString": markdownOriginalString,"dateString": dateString,"rulesets": rulesets
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        false,
+        env
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  async PromptTokenTest(
+      input: string,
+      __baml_options__?: BamlCallOptions
+  ): Promise<HTTPRequest> {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return await this.runtime.buildRequest(
+        "PromptTokenTest",
+        {
+          "input": input
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        false,
+        env
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  async Style2ArticleGeneration(
+      markdownOriginalString: string,dateString: string,
+      __baml_options__?: BamlCallOptions
+  ): Promise<HTTPRequest> {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return await this.runtime.buildRequest(
+        "Style2ArticleGeneration",
+        {
+          "markdownOriginalString": markdownOriginalString,"dateString": dateString
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        false,
+        env
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
 }
 
 export class AsyncHttpStreamRequest {
   constructor(private runtime: BamlRuntime, private ctxManager: BamlCtxManager) {}
 
   
+  async ArticleOptimize(
+      markdownOriginalString: string,articleGenerationContent: string,articleTitle: string,articleType: string,
+      __baml_options__?: BamlCallOptions
+  ): Promise<HTTPRequest> {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return await this.runtime.buildRequest(
+        "ArticleOptimize",
+        {
+          "markdownOriginalString": markdownOriginalString,"articleGenerationContent": articleGenerationContent,"articleTitle": articleTitle,"articleType": articleType
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        true,
+        env
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
   async ChatAgent(
-      message: Message[],tone: "happy" | "sad",
+      eventMessage: EventMessage[],
       __baml_options__?: BamlCallOptions
   ): Promise<HTTPRequest> {
     try {
@@ -135,7 +245,7 @@ export class AsyncHttpStreamRequest {
       return await this.runtime.buildRequest(
         "ChatAgent",
         {
-          "message": message,"tone": tone
+          "eventMessage": eventMessage
         },
         this.ctxManager.cloneContext(),
         __baml_options__?.tb?.__tb(),
@@ -200,6 +310,72 @@ export class AsyncHttpStreamRequest {
       const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
       return await this.runtime.buildRequest(
         "GenerateArticle",
+        {
+          "markdownOriginalString": markdownOriginalString,"dateString": dateString
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        true,
+        env
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  async GenerateArticleWithRuleSets(
+      markdownOriginalString: string,dateString: string,rulesets: RuleSet[],
+      __baml_options__?: BamlCallOptions
+  ): Promise<HTTPRequest> {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return await this.runtime.buildRequest(
+        "GenerateArticleWithRuleSets",
+        {
+          "markdownOriginalString": markdownOriginalString,"dateString": dateString,"rulesets": rulesets
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        true,
+        env
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  async PromptTokenTest(
+      input: string,
+      __baml_options__?: BamlCallOptions
+  ): Promise<HTTPRequest> {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return await this.runtime.buildRequest(
+        "PromptTokenTest",
+        {
+          "input": input
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        true,
+        env
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  async Style2ArticleGeneration(
+      markdownOriginalString: string,dateString: string,
+      __baml_options__?: BamlCallOptions
+  ): Promise<HTTPRequest> {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return await this.runtime.buildRequest(
+        "Style2ArticleGeneration",
         {
           "markdownOriginalString": markdownOriginalString,"dateString": dateString
         },

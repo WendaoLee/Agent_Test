@@ -11,7 +11,7 @@ function CheckContent(generationArticleContent:string) -> ArticleCheckResult {
   prompt #"
         <goal>
        你的任务是根据下方 `<inspect_rule></inspect_rule>` 标签中的规则，去检查 `<article></article>` 里的JSON的文章内容以及格式是否符合文章的格式要求，
-       如果不符合，按照格式要求修正原始文章内容，最后按照JSON格式输出内容 `{
+       如果不符合，在不影响文章风格的情况下按照格式要求修正原始文章内容，最后按照JSON格式输出内容 `{
     "title": "文章标题",
     "markdownContent": "文章markdown内容"
 }`

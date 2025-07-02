@@ -20,7 +20,7 @@ import { toBamlError, BamlStream, type HTTPRequest } from "@boundaryml/baml"
 import type { Checked, Check, RecursivePartialNull as MovedRecursivePartialNull } from "./types.js"
 import type { partial_types } from "./partial_types.js"
 import type * as types from "./types.js"
-import type {ArticleCheckResult, ArticleGenerationResult, Message, ReplyTool, Resume, StopTool} from "./types.js"
+import type {ArticleCheckResult, ArticleGenerationResult, ArticleGenerationTool, ArticleMemorySaveEvent, ArticleOptimizeResult, EventMessage, MemoryRetrivalTool, MemoryStateToolData, RequestHumanForConfirmation, RequestHumanForSatisfaction, Resume, RuleSet, StopEvent} from "./types.js"
 import type TypeBuilder from "./type_builder.js"
 import { AsyncHttpRequest, AsyncHttpStreamRequest } from "./async_request.js"
 import { LlmResponseParser, LlmStreamParser } from "./parser.js"
@@ -84,18 +84,18 @@ export class BamlAsyncClient {
   }
 
   
-  async ChatAgent(
-      message: Message[],tone: "happy" | "sad",
+  async ArticleOptimize(
+      markdownOriginalString: string,articleGenerationContent: string,articleTitle: string,articleType: string,
       __baml_options__?: BamlCallOptions
-  ): Promise<StopTool | ReplyTool> {
+  ): Promise<ArticleOptimizeResult> {
     try {
       const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
       const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
       const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
       const raw = await this.runtime.callFunction(
-        "ChatAgent",
+        "ArticleOptimize",
         {
-          "message": message,"tone": tone
+          "markdownOriginalString": markdownOriginalString,"articleGenerationContent": articleGenerationContent,"articleTitle": articleTitle,"articleType": articleType
         },
         this.ctxManager.cloneContext(),
         options.tb?.__tb(),
@@ -103,7 +103,32 @@ export class BamlAsyncClient {
         collector,
         env,
       )
-      return raw.parsed(false) as StopTool | ReplyTool
+      return raw.parsed(false) as ArticleOptimizeResult
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  async ChatAgent(
+      eventMessage: EventMessage[],
+      __baml_options__?: BamlCallOptions
+  ): Promise<StopEvent | RequestHumanForConfirmation | RequestHumanForSatisfaction | ArticleGenerationTool> {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
+      const raw = await this.runtime.callFunction(
+        "ChatAgent",
+        {
+          "eventMessage": eventMessage
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as StopEvent | RequestHumanForConfirmation | RequestHumanForSatisfaction | ArticleGenerationTool
     } catch (error) {
       throw toBamlError(error);
     }
@@ -184,6 +209,81 @@ export class BamlAsyncClient {
     }
   }
   
+  async GenerateArticleWithRuleSets(
+      markdownOriginalString: string,dateString: string,rulesets: RuleSet[],
+      __baml_options__?: BamlCallOptions
+  ): Promise<ArticleGenerationResult> {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
+      const raw = await this.runtime.callFunction(
+        "GenerateArticleWithRuleSets",
+        {
+          "markdownOriginalString": markdownOriginalString,"dateString": dateString,"rulesets": rulesets
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as ArticleGenerationResult
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  async PromptTokenTest(
+      input: string,
+      __baml_options__?: BamlCallOptions
+  ): Promise<string> {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
+      const raw = await this.runtime.callFunction(
+        "PromptTokenTest",
+        {
+          "input": input
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as string
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  async Style2ArticleGeneration(
+      markdownOriginalString: string,dateString: string,
+      __baml_options__?: BamlCallOptions
+  ): Promise<ArticleGenerationResult> {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
+      const raw = await this.runtime.callFunction(
+        "Style2ArticleGeneration",
+        {
+          "markdownOriginalString": markdownOriginalString,"dateString": dateString
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as ArticleGenerationResult
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
 }
 
 class BamlStreamClient {
@@ -198,18 +298,18 @@ class BamlStreamClient {
   }
 
   
-  ChatAgent(
-      message: Message[],tone: "happy" | "sad",
+  ArticleOptimize(
+      markdownOriginalString: string,articleGenerationContent: string,articleTitle: string,articleType: string,
       __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, collector?: Collector | Collector[], env?: Record<string, string | undefined> }
-  ): BamlStream<((partial_types.StopTool | null) | (partial_types.ReplyTool | null)), StopTool | ReplyTool> {
+  ): BamlStream<partial_types.ArticleOptimizeResult, ArticleOptimizeResult> {
     try {
       const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
       const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
       const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
       const raw = this.runtime.streamFunction(
-        "ChatAgent",
+        "ArticleOptimize",
         {
-          "message": message,"tone": tone
+          "markdownOriginalString": markdownOriginalString,"articleGenerationContent": articleGenerationContent,"articleTitle": articleTitle,"articleType": articleType
         },
         undefined,
         this.ctxManager.cloneContext(),
@@ -218,10 +318,41 @@ class BamlStreamClient {
         collector,
         env,
       )
-      return new BamlStream<((partial_types.StopTool | null) | (partial_types.ReplyTool | null)), StopTool | ReplyTool>(
+      return new BamlStream<partial_types.ArticleOptimizeResult, ArticleOptimizeResult>(
         raw,
-        (a): ((partial_types.StopTool | null) | (partial_types.ReplyTool | null)) => a,
-        (a): StopTool | ReplyTool => a,
+        (a): partial_types.ArticleOptimizeResult => a,
+        (a): ArticleOptimizeResult => a,
+        this.ctxManager.cloneContext(),
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  ChatAgent(
+      eventMessage: EventMessage[],
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, collector?: Collector | Collector[], env?: Record<string, string | undefined> }
+  ): BamlStream<((partial_types.StopEvent | null) | (partial_types.RequestHumanForConfirmation | null) | (partial_types.RequestHumanForSatisfaction | null) | (partial_types.ArticleGenerationTool | null)), StopEvent | RequestHumanForConfirmation | RequestHumanForSatisfaction | ArticleGenerationTool> {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
+      const raw = this.runtime.streamFunction(
+        "ChatAgent",
+        {
+          "eventMessage": eventMessage
+        },
+        undefined,
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return new BamlStream<((partial_types.StopEvent | null) | (partial_types.RequestHumanForConfirmation | null) | (partial_types.RequestHumanForSatisfaction | null) | (partial_types.ArticleGenerationTool | null)), StopEvent | RequestHumanForConfirmation | RequestHumanForSatisfaction | ArticleGenerationTool>(
+        raw,
+        (a): ((partial_types.StopEvent | null) | (partial_types.RequestHumanForConfirmation | null) | (partial_types.RequestHumanForSatisfaction | null) | (partial_types.ArticleGenerationTool | null)) => a,
+        (a): StopEvent | RequestHumanForConfirmation | RequestHumanForSatisfaction | ArticleGenerationTool => a,
         this.ctxManager.cloneContext(),
       )
     } catch (error) {
@@ -301,6 +432,99 @@ class BamlStreamClient {
       const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
       const raw = this.runtime.streamFunction(
         "GenerateArticle",
+        {
+          "markdownOriginalString": markdownOriginalString,"dateString": dateString
+        },
+        undefined,
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return new BamlStream<partial_types.ArticleGenerationResult, ArticleGenerationResult>(
+        raw,
+        (a): partial_types.ArticleGenerationResult => a,
+        (a): ArticleGenerationResult => a,
+        this.ctxManager.cloneContext(),
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  GenerateArticleWithRuleSets(
+      markdownOriginalString: string,dateString: string,rulesets: RuleSet[],
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, collector?: Collector | Collector[], env?: Record<string, string | undefined> }
+  ): BamlStream<partial_types.ArticleGenerationResult, ArticleGenerationResult> {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
+      const raw = this.runtime.streamFunction(
+        "GenerateArticleWithRuleSets",
+        {
+          "markdownOriginalString": markdownOriginalString,"dateString": dateString,"rulesets": rulesets
+        },
+        undefined,
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return new BamlStream<partial_types.ArticleGenerationResult, ArticleGenerationResult>(
+        raw,
+        (a): partial_types.ArticleGenerationResult => a,
+        (a): ArticleGenerationResult => a,
+        this.ctxManager.cloneContext(),
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  PromptTokenTest(
+      input: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, collector?: Collector | Collector[], env?: Record<string, string | undefined> }
+  ): BamlStream<string, string> {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
+      const raw = this.runtime.streamFunction(
+        "PromptTokenTest",
+        {
+          "input": input
+        },
+        undefined,
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return new BamlStream<string, string>(
+        raw,
+        (a): string => a,
+        (a): string => a,
+        this.ctxManager.cloneContext(),
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  Style2ArticleGeneration(
+      markdownOriginalString: string,dateString: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, collector?: Collector | Collector[], env?: Record<string, string | undefined> }
+  ): BamlStream<partial_types.ArticleGenerationResult, ArticleGenerationResult> {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
+      const raw = this.runtime.streamFunction(
+        "Style2ArticleGeneration",
         {
           "markdownOriginalString": markdownOriginalString,"dateString": dateString
         },

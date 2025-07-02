@@ -19,7 +19,7 @@ import type { BamlRuntime, FunctionResult, BamlCtxManager, Image, Audio, ClientR
 import { toBamlError, type HTTPRequest } from "@boundaryml/baml"
 import type { Checked, Check, RecursivePartialNull as MovedRecursivePartialNull } from "./types.js"
 import type * as types from "./types.js"
-import type {ArticleCheckResult, ArticleGenerationResult, Message, ReplyTool, Resume, StopTool} from "./types.js"
+import type {ArticleCheckResult, ArticleGenerationResult, ArticleGenerationTool, ArticleMemorySaveEvent, ArticleOptimizeResult, EventMessage, MemoryRetrivalTool, MemoryStateToolData, RequestHumanForConfirmation, RequestHumanForSatisfaction, Resume, RuleSet, StopEvent} from "./types.js"
 import type TypeBuilder from "./type_builder.js"
 import { HttpRequest, HttpStreamRequest } from "./sync_request.js"
 import { LlmResponseParser, LlmStreamParser } from "./parser.js"
@@ -86,18 +86,18 @@ export class BamlSyncClient {
   }
 
   
-  ChatAgent(
-      message: Message[],tone: "happy" | "sad",
+  ArticleOptimize(
+      markdownOriginalString: string,articleGenerationContent: string,articleTitle: string,articleType: string,
       __baml_options__?: BamlCallOptions
-  ): StopTool | ReplyTool {
+  ): ArticleOptimizeResult {
     try {
       const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
       const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
       const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
       const raw = this.runtime.callFunctionSync(
-        "ChatAgent",
+        "ArticleOptimize",
         {
-          "message": message,"tone": tone
+          "markdownOriginalString": markdownOriginalString,"articleGenerationContent": articleGenerationContent,"articleTitle": articleTitle,"articleType": articleType
         },
         this.ctxManager.cloneContext(),
         options.tb?.__tb(),
@@ -105,7 +105,32 @@ export class BamlSyncClient {
         collector,
         env,
       )
-      return raw.parsed(false) as StopTool | ReplyTool
+      return raw.parsed(false) as ArticleOptimizeResult
+    } catch (error: any) {
+      throw toBamlError(error);
+    }
+  }
+  
+  ChatAgent(
+      eventMessage: EventMessage[],
+      __baml_options__?: BamlCallOptions
+  ): StopEvent | RequestHumanForConfirmation | RequestHumanForSatisfaction | ArticleGenerationTool {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
+      const raw = this.runtime.callFunctionSync(
+        "ChatAgent",
+        {
+          "eventMessage": eventMessage
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as StopEvent | RequestHumanForConfirmation | RequestHumanForSatisfaction | ArticleGenerationTool
     } catch (error: any) {
       throw toBamlError(error);
     }
@@ -171,6 +196,81 @@ export class BamlSyncClient {
       const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
       const raw = this.runtime.callFunctionSync(
         "GenerateArticle",
+        {
+          "markdownOriginalString": markdownOriginalString,"dateString": dateString
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as ArticleGenerationResult
+    } catch (error: any) {
+      throw toBamlError(error);
+    }
+  }
+  
+  GenerateArticleWithRuleSets(
+      markdownOriginalString: string,dateString: string,rulesets: RuleSet[],
+      __baml_options__?: BamlCallOptions
+  ): ArticleGenerationResult {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
+      const raw = this.runtime.callFunctionSync(
+        "GenerateArticleWithRuleSets",
+        {
+          "markdownOriginalString": markdownOriginalString,"dateString": dateString,"rulesets": rulesets
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as ArticleGenerationResult
+    } catch (error: any) {
+      throw toBamlError(error);
+    }
+  }
+  
+  PromptTokenTest(
+      input: string,
+      __baml_options__?: BamlCallOptions
+  ): string {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
+      const raw = this.runtime.callFunctionSync(
+        "PromptTokenTest",
+        {
+          "input": input
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as string
+    } catch (error: any) {
+      throw toBamlError(error);
+    }
+  }
+  
+  Style2ArticleGeneration(
+      markdownOriginalString: string,dateString: string,
+      __baml_options__?: BamlCallOptions
+  ): ArticleGenerationResult {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const env = options.env ? { ...process.env, ...options.env } : { ...process.env };
+      const raw = this.runtime.callFunctionSync(
+        "Style2ArticleGeneration",
         {
           "markdownOriginalString": markdownOriginalString,"dateString": dateString
         },

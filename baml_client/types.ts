@@ -55,17 +55,67 @@ export interface ArticleCheckResult {
 export interface ArticleGenerationResult {
   title: string
   markdownContent: string
+  articleType: string
   
 }
 
-export interface Message {
-  role: string
-  content: string
+/**
+ * 文章初步生成工具
+ */
+export interface ArticleGenerationTool {
+  event: "tool"
+  data: "ArticleGenerationTool"
   
 }
 
-export interface ReplyTool {
-  response: string
+export interface ArticleMemorySaveEvent {
+  event: "memory_saved"
+  data: "memory_data"
+  
+}
+
+export interface ArticleOptimizeResult {
+  title: string
+  markdownContent: string
+  articleType: string
+  
+}
+
+export interface EventMessage {
+  eventName: string
+  dataContent: string
+  
+}
+
+export interface MemoryRetrivalTool {
+  event: "tool"
+  
+}
+
+/**
+ * 对于比较长的上下文记忆，需要通过 MemoryStateToolData 工具去获取相应的记忆
+ */
+export interface MemoryStateToolData {
+  toolName: string
+  dataContent: string
+  
+}
+
+/**
+ * 让用户确认任务是否完成
+ */
+export interface RequestHumanForConfirmation {
+  event: "request_human"
+  data: "isTaskFinished"
+  
+}
+
+/**
+ * 让用户确认当前生成的内容是否满足需求
+ */
+export interface RequestHumanForSatisfaction {
+  event: "request_human"
+  data: "isSatisfaction?"
   
 }
 
@@ -77,8 +127,14 @@ export interface Resume {
   
 }
 
-export interface StopTool {
-  action: "stop"
+export interface RuleSet {
+  content: string
+  
+}
+
+export interface StopEvent {
+  event: "stop"
+  data?: null | null
   
 }
 

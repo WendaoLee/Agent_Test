@@ -19,7 +19,7 @@ import type { BamlRuntime, BamlCtxManager, ClientRegistry, Image, Audio } from "
 import { toBamlError, HTTPRequest } from "@boundaryml/baml"
 import type { Checked, Check } from "./types.js"
 import type * as types from "./types.js"
-import type {ArticleCheckResult, ArticleGenerationResult, Message, ReplyTool, Resume, StopTool} from "./types.js"
+import type {ArticleCheckResult, ArticleGenerationResult, ArticleGenerationTool, ArticleMemorySaveEvent, ArticleOptimizeResult, EventMessage, MemoryRetrivalTool, MemoryStateToolData, RequestHumanForConfirmation, RequestHumanForSatisfaction, Resume, RuleSet, StopEvent} from "./types.js"
 import type TypeBuilder from "./type_builder.js"
 
 type BamlCallOptions = {
@@ -32,8 +32,30 @@ export class HttpRequest {
   constructor(private runtime: BamlRuntime, private ctxManager: BamlCtxManager) {}
 
   
+  ArticleOptimize(
+      markdownOriginalString: string,articleGenerationContent: string,articleTitle: string,articleType: string,
+      __baml_options__?: BamlCallOptions
+  ): HTTPRequest {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.buildRequestSync(
+        "ArticleOptimize",
+        {
+          "markdownOriginalString": markdownOriginalString,"articleGenerationContent": articleGenerationContent,"articleTitle": articleTitle,"articleType": articleType
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        false,
+        env,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
   ChatAgent(
-      message: Message[],tone: "happy" | "sad",
+      eventMessage: EventMessage[],
       __baml_options__?: BamlCallOptions
   ): HTTPRequest {
     try {
@@ -41,7 +63,7 @@ export class HttpRequest {
       return this.runtime.buildRequestSync(
         "ChatAgent",
         {
-          "message": message,"tone": tone
+          "eventMessage": eventMessage
         },
         this.ctxManager.cloneContext(),
         __baml_options__?.tb?.__tb(),
@@ -120,14 +142,102 @@ export class HttpRequest {
     }
   }
   
+  GenerateArticleWithRuleSets(
+      markdownOriginalString: string,dateString: string,rulesets: RuleSet[],
+      __baml_options__?: BamlCallOptions
+  ): HTTPRequest {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.buildRequestSync(
+        "GenerateArticleWithRuleSets",
+        {
+          "markdownOriginalString": markdownOriginalString,"dateString": dateString,"rulesets": rulesets
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        false,
+        env,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  PromptTokenTest(
+      input: string,
+      __baml_options__?: BamlCallOptions
+  ): HTTPRequest {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.buildRequestSync(
+        "PromptTokenTest",
+        {
+          "input": input
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        false,
+        env,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  Style2ArticleGeneration(
+      markdownOriginalString: string,dateString: string,
+      __baml_options__?: BamlCallOptions
+  ): HTTPRequest {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.buildRequestSync(
+        "Style2ArticleGeneration",
+        {
+          "markdownOriginalString": markdownOriginalString,"dateString": dateString
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        false,
+        env,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
 }
 
 export class HttpStreamRequest {
   constructor(private runtime: BamlRuntime, private ctxManager: BamlCtxManager) {}
 
   
+  ArticleOptimize(
+      markdownOriginalString: string,articleGenerationContent: string,articleTitle: string,articleType: string,
+      __baml_options__?: BamlCallOptions
+  ): HTTPRequest {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.buildRequestSync(
+        "ArticleOptimize",
+        {
+          "markdownOriginalString": markdownOriginalString,"articleGenerationContent": articleGenerationContent,"articleTitle": articleTitle,"articleType": articleType
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        true,
+        env,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
   ChatAgent(
-      message: Message[],tone: "happy" | "sad",
+      eventMessage: EventMessage[],
       __baml_options__?: BamlCallOptions
   ): HTTPRequest {
     try {
@@ -135,7 +245,7 @@ export class HttpStreamRequest {
       return this.runtime.buildRequestSync(
         "ChatAgent",
         {
-          "message": message,"tone": tone
+          "eventMessage": eventMessage
         },
         this.ctxManager.cloneContext(),
         __baml_options__?.tb?.__tb(),
@@ -200,6 +310,72 @@ export class HttpStreamRequest {
       const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
       return this.runtime.buildRequestSync(
         "GenerateArticle",
+        {
+          "markdownOriginalString": markdownOriginalString,"dateString": dateString
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        true,
+        env,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  GenerateArticleWithRuleSets(
+      markdownOriginalString: string,dateString: string,rulesets: RuleSet[],
+      __baml_options__?: BamlCallOptions
+  ): HTTPRequest {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.buildRequestSync(
+        "GenerateArticleWithRuleSets",
+        {
+          "markdownOriginalString": markdownOriginalString,"dateString": dateString,"rulesets": rulesets
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        true,
+        env,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  PromptTokenTest(
+      input: string,
+      __baml_options__?: BamlCallOptions
+  ): HTTPRequest {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.buildRequestSync(
+        "PromptTokenTest",
+        {
+          "input": input
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        true,
+        env,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  Style2ArticleGeneration(
+      markdownOriginalString: string,dateString: string,
+      __baml_options__?: BamlCallOptions
+  ): HTTPRequest {
+    try {
+      const env = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      return this.runtime.buildRequestSync(
+        "Style2ArticleGeneration",
         {
           "markdownOriginalString": markdownOriginalString,"dateString": dateString
         },

@@ -2,12 +2,16 @@
 class ArticleGenerationResult{
     title string
     markdownContent string
+    articleType string
 }
 
-// 从传入的 markdown 内容中，尝试生成文章
-function GenerateArticle(markdownOriginalString: string,dateString: string) -> ArticleGenerationResult {
-  client "CustomDeepseek"
-  prompt #"
+class RuleSet{
+  content string
+}
+
+template_string SystemPromptForArticleGeneration(dateString: string) #"
+    {{ _.role("system")}}
+
     <basic_information>
     当前日期是 {{dateString}}
     </basic_information>
@@ -18,13 +22,63 @@ function GenerateArticle(markdownOriginalString: string,dateString: string) -> A
 控制文章字数在 700 字左右。
 最后以不使用标题以及有序列表、无序列表语法的 markdown 格式输出文章。
 请注意,你的任务性质是写作，而不是总结，因此需要在写作时存在读者意识，文章是要写给人看的，要考虑阅读体验，而不是枯燥地传达信息。
-需要你遵循的其他规则以 `<rule></rule>` 标签包裹，原文内容以 `<original_content></original_content>` 标签包裹。
+需要你遵循的其他规则以 `<rule></rule>` 标签包裹，对文章类型的分类以 `<article_type></article_type>` 标签包裹，原文内容以 `<original_content></original_content>` 标签包裹，回复格式以 `<response_format></response_format>` 标签包裹。
 全力以赴进行写作，输出内容必须是中文。
 最后以JSON格式输出内容，`{
     "title": "文章标题",
-    "markdownContent": "文章markdown内容"
+    "markdownContent": "文章markdown内容",
+    "articleType":"输入文章的类型"
 }`
 </goal>
+
+<article_type>
+文章通常可以归类为以下类型，因此要采取不同的写作策略，下面以 `文章类型(判断依据)` 的方式给出文章类型以及判断依据:
+- 新闻类文章(文章围绕某一事件展开，具有明显的时间、地点、事件、人物特征)
+- 论文类文章(核心围绕学术论文内容展开)
+- 专栏类文章(作者主要阐述个人观点的文章)
+- 访谈类文章(文章中存在大量的 QA 内容，围绕人物对话展开)
+- 故事类文章(具有明显的讲故事特征)
+- 政策发布类文章(和政府相关，通常会发布相关政策法律文件)
+- 教程类文章(文章主要内容是想要教会读者什么东西)
+</article_type>
+"#
+
+// 测试 Prompt 在列出规则上的不同风格的影响
+function Style2ArticleGeneration(markdownOriginalString:string,dateString:string) -> ArticleGenerationResult {
+  client "CustomDeepseek"
+  prompt #"
+    {{SystemPromptForArticleGeneration(dateString)}}
+
+    <rule>
+    1. 按照指定格式输出文章内容以及文章标题即可，对于文章内的关键词，使用 markdown 的加粗语法，并且确保前后存在空格，以保证部分渲染引擎的正常运作。标点符号遵循中文写作规范。
+    2. 写作风格上，优先考虑结合原文所述的实例进行叙述，忠于原文，禁止编造实例，减少发散延伸。
+    3. 留意文章讨论内容的客观事件，客观事件指文章所述内容可能涉及到现实中发生的事件，应当从"事件发生的时间""事件发生的地点""事件涉及人物"这三个角度去留意客观事件。如果文章围绕某个客观事件展开，正文中应当出现对应的内容。
+    4. 对于不同类型的文章，需要采用不同的写作策略。对于新闻类文章、论文类文章、政策发布类文章结尾不用带上加有个人偏好的总结点评。
+    5. 写作应该减少文学性较强的修辞手法，由于核心目标是传达能让人读懂的有价值信息，因此禁止生造无法从字面上理解含义的名词。减少不必要的赘述、车轱辘话。
+    6. 如果文章所涉的外文人名在你的知识库内有明确的指向对应，那么可以使用对应的中文名，以括号的形式标注英文名。对于一些行业外文术语，在翻译的时候，同样在后面以括号的形式标注英文名。
+    7. 控制文章字数在五段话（700~800字左右）以内，可以考虑减少叙述的维度实现这一点。
+    </rule>
+
+    <response_format>
+    {{ ctx.output_format(
+       prefix="永远以符合下方格式的JSON输出内容"
+    )}}
+    </response_format>
+
+    <original_content>
+    {{markdownOriginalString}}
+    </original_content>
+  "#
+}
+
+
+// 从传入的 markdown 内容中，尝试生成文章
+function GenerateArticle(markdownOriginalString: string,dateString: string) -> ArticleGenerationResult {
+  client "CustomDeepseek"
+  prompt #"
+
+    {{ SystemPromptForArticleGeneration(dateString)}}
+
 
 <rule>
 <rule_1>
@@ -39,11 +93,11 @@ function GenerateArticle(markdownOriginalString: string,dateString: string) -> A
 </rule_3>
 
 <rule_4>
-对于不同类型的文章，需要采用不同的写作策略。例如，对于访谈类的文章，可以在改写内容里引用部分访谈对话的原文。
+对于不同类型的文章，需要采用不同的写作策略。对于新闻类文章、论文类文章、政策发布类文章结尾不用带上加有个人偏好的总结点评。
 </rule_4>
 
 <rule_5>
-写作应该减少文学性较强的修辞手法，由于核心目标是传达能让人读懂的有价值信息，因此禁止生造无法从字面上理解含义的名词。减少不必要的赘述、车轱辘花
+写作应该减少文学性较强的修辞手法，由于核心目标是传达能让人读懂的有价值信息，因此禁止生造无法从字面上理解含义的名词。减少不必要的赘述、车轱辘话
 </rule_5>
 
 <rule_6>
@@ -53,8 +107,15 @@ function GenerateArticle(markdownOriginalString: string,dateString: string) -> A
 
 <rule_7>
 控制文章字数在五段话（700~800字左右）以内，可以考虑减少叙述的维度实现这一点。
-<rule_7>
+</rule_7>
+
 </rule>
+
+<response_format>
+{{ ctx.output_format(
+   prefix="永远以符合下方格式的JSON输出内容"
+)}}
+</response_format>
 
 
 
@@ -64,11 +125,52 @@ function GenerateArticle(markdownOriginalString: string,dateString: string) -> A
   "#
 }
 
+function GenerateArticleWithRuleSets(markdownOriginalString:string,dateString:string,rulesets:RuleSet[]) -> ArticleGenerationResult {
+  client "CustomDeepseek"
+  prompt #"
+    {{SystemPromptForArticleGeneration(dateString)}}
 
+    {% for one_rule in rulesets %}
+    <rule_{{loop.index}}>
+    {{one_rule.content}}
+    </rule_{{loop.index}}>
+    {% endfor %}
+  "#
+}
+
+test EmptyArticleTest {
+  functions[GenerateArticle]
+  args {
+    dateString #"
+      2025-07-02
+    "#
+
+    markdownOriginalString #"
+
+    "#
+  }
+}
+
+test GenerationArticleWithRuleSets {
+  functions [GenerateArticleWithRuleSets]
+  args {
+    dateString #"
+      2025-07-02
+    "#
+    markdownOriginalString #"
+
+    "#
+    rulesets [
+      {
+        content "规则"
+      }
+    ]
+  }
+}
 
 // 访谈类文章测试
 test GenerationFangtanKindArticleTest {
-  functions [GenerateArticle]
+  functions [GenerateArticle,Style2ArticleGeneration]
   args {
     dateString #"
         2025-07-01
@@ -97,7 +199,7 @@ Group Product Manager
 Share
 Today we are excited to share updates across the board to our Gemini 2.5 model family:
 
-Gemini 2.5 Pro is generally available and stable (no changes from the 06-05 preview)
+Gemini 2.5 Pro is generally Gvailable and stable (no changes from the 06-05 preview)
 Gemini 2.5 Flash is generally available and stable (no changes from the 05-20 preview, see pricing updates below)
 Gemini 2.5 Flash-Lite is now available in preview
 Gemini 2.5 models are thinking models, capable of reasoning through their thoughts before responding, resulting in enhanced performance and improved accuracy. Each model has control over the thinking budget, giving developers the ability to choose when and how much the model “thinks” before generating a response.
@@ -277,3 +379,73 @@ Netflix《鱿鱼游戏》第三季终极预告发布，6 月 27 日上线
   }
 }
 
+test ArticleGenerationForFinanceArticle {
+  functions [GenerateArticle]
+  args {
+    markdownOriginalString #"
+      Senate passes Trump’s tax bill, sending it to House for final vote
+The bill would extend tax cuts from Trump’s first term and slash roughly $1 trillion from Medicaid and other health care programs.
+Updated
+July 1, 2025 at 5:00 p.m. EDTtoday at 5:00 p.m. EDT
+9 min
+Summary3888
+Senate Majority Leader John Thune (R-South Dakota) speaks with the media after the passage of the tax bill on Capitol Hill on Tuesday. (Demetrius Freeman/The Washington Post)
+By Jacob Bogage
+, 
+Theodoric Meyer
+, 
+Liz Goodwin
+ and 
+Marianna Sotomayor
+The Senate on Tuesday narrowly approved massive tax and immigration legislation that Republicans hope will become the centerpiece of President Donald Trump’s second term, cutting taxes while axing funding for social safety net programs and undoing much of President Joe Biden’s climate law.
+Vice President JD Vance cast the tiebreaking vote for the measure, which would extend trillions of dollars in tax cuts from Trump’s first term and implement new campaign promises — such as eliminating income taxes on tips and overtime wages — while spending hundreds of billions of dollars on immigration enforcement and defense.
+To offset the cost, the legislation would cut about $1 trillion from Medicaid, the federal health insurance program for low-income individuals and people with disabilities, and other health care programs. It would also make reductions to SNAP, the anti-hunger Supplemental Nutrition Assistance Program, formerly known as food stamps. Nearly 12 million people will lose health care coverage if the bill becomes law, according to the nonpartisan Congressional Budget Office.
+To reach the Oval Office, the bill must clear one more hurdle: the House, where many members have balked at the Senate’s changes, raising questions about whether the legislation will make it to Trump’s desk by Independence Day.
+
+Follow Trump’s second term
+
+Follow
+House Speaker Mike Johnson (R-Louisiana) said Tuesday that the Senate “went a little further than many of us would have preferred,” but he vowed to “get that bill over the line.”
+“A lot of people didn’t get what they wanted,” Johnson said. But, he continued, “the president said it’s his bill. It’s not a House bill, it’s not a Senate bill. It’s the American people’s bill.”
+Fiscal hawks in the House may take some convincing. “What’s happened is our bill has been completely changed,” said Rep. Ralph Norman (R-South Carolina), a member of the influential Rules Committee and the archconservative House Freedom Caucus. “It’s a nonstarter. This bill doesn’t do what the president wants it to do.”
+The bruising battle to pass the bill split Senate Republicans, as some pressed for deeper spending reductions and others balked at the cuts to Medicaid and other programs. Lawmakers spent nearly 48 consecutive hours reading, debating and amending the legislation on the Senate floor. And in the end, three Republicans voted against the measure: Sens. Rand Paul (Kentucky), Thom Tillis (North Carolina) and Susan Collins (Maine).
+“There will be a day that conservatives will rue the fact that some of them actually voted for this,” Paul said after the vote.
+Tillis abruptly announced Sunday that he would not seek another term next year after voting against beginning debate on the measure — and drawing Trump’s ire online. His decision will force Republicans to defend an open seat in a swing state that Democrats are determined to pick up in the midterms.
+Collins, a moderate up for reelection next year in a blue state, joined Tillis in opposing the bill, citing her concerns about Medicaid cuts. Paul, a deficit hawk, opposed it on different grounds: that it didn’t cut spending enough.
+Sen. Lisa Murkowski (R-Alaska), who expressed concerns about the legislation’s Medicaid cuts, ultimately voted for it. The bill was loaded with benefits for Alaska, including a special tax break for whaling captains.
+She said her decision to back the legislation was “agonizing” and described the Senate’s process as “rushed” — to the detriment of “the deliberative approach to good legislating” — to meet Trump’s “artificial timeline.”
+She added that she hopes the House amends the measure to reduce the cuts to social safety net programs.
+“This is probably the most difficult and agonizing legislative 24-hour period that I have encountered, and I’ve been here quite awhile, and you all know that I have a few battle scars underneath me,” Murkowski said. “But I held my head up and made sure the people of Alaska are not forgotten in this. But I think there is more that needs to be done, and I’m not done.”
+To win her support, Republican leaders made last-minute concessions. The GOP doubled the value of a rural hospital bailout fund meant to ease the institutions’ adjustment to the Medicaid cuts. The agriculture portion of the bill delayed implementation of cuts to SNAP in high-poverty states. And tax writers removed a provision that would have imposed a new duty on renewable-energy systems.
+“Good things are important,” Murkowski said, “but it also is important in terms of how they are paid for, and I struggled mightily with the impact on the most vulnerable in this country when you look to the Medicaid and the SNAP provisions.”
+Senate holds marathon overnight vote on Trump’s tax cuts bill
+
+
++12
+Republicans declared that their legislation would help the working-class voters who swept Trump to the White House and the GOP to unified control of Congress in November’s elections.
+The bill would increase the child tax credit and add a bonus to the standard deduction for seniors, a provision inspired by Trump’s campaign pledge to stop taxing Social Security benefits. It would also create savings accounts for newborns, seeded with $1,000 of taxpayer money, and it would allow buyers of American-made cars to deduct up to $10,000 in car loan interest.
+“This is delivering on President Trump’s promises. That’s the key,” said Sen. Eric Schmitt (R-Missouri).
+But beyond those populist flourishes, the measure is starkly regressive. The 10 percent of households with the lowest incomes would stand to be worse off by an average of $1,600 per year because of benefits cuts, according to the Congressional Budget Office’s analysis of the House version of the bill. The 10 percent of households with the highest incomes would be better off by $12,000 on average.
+The legislation would make permanent a trio of corporate tax deductions that make it easier for companies to invest in research and purchase new equipment.
+Adding in the impact of Trump’s tariffs — which the White House has argued will help pay for the bill’s tax cuts and new spending — the bottom 80 percent of households would see their take-home incomes fall, according to the Yale Budget Lab.
+“The right way to understand this bill is it is the largest wealth transfer from the poorest Americans to the richest Americans in modern history,” said Natasha Sarin, the Budget Lab’s president.
+The nearly $170 billion in the bill to fund the Trump administration’s border and immigration crackdown would be one of the largest sums ever spent on homeland security, and an additional $160 billion would flow to the Defense Department, partially for Trump’s proposed “Golden Dome” continental missile defense system.
+The new spending and lost tax revenue would force the federal government to borrow nearly $4 trillion more over the next decade, according to the congressional bookkeepers. To shove the measure through the cumbersome budget reconciliation process, the GOP weakened the Senate’s filibuster in a way that will make addressing the nation’s poor financial health more difficult.
+Republicans began their tax-writing process shortly after November electoral victories with pledges to dramatically reduce government spending and annual deficits, wary of adding to a national debt that already totals more than $36 trillion.
+Budget reconciliation, the process Republicans used to bypass a Democratic Senate filibuster, requires both chambers to approve a budget resolution with broad policy outlines for the bill, then to pass the legislation itself.
+Would-be GOP rebels voiced debt concerns when the House took up a budget resolution in February, then again in April on an amended budget and finally in May on the tax legislation itself. Each time, they ultimately voted for the measure.
+The bill also would raise the debt ceiling — a cap on how much the country can borrow to pay for spending already required by law — by $5 trillion, which Republicans hope will be enough to keep Trump from having to deal with the issue again during his presidency.
+“If the economy continues to climb the way it is and our deficit reduction continues to go into effect, it could get there, but the math is going to be tough. There’s a lot of factors,” said Sen. Markwayne Mullin (R-Oklahoma), a key interlocutor between Senate leadership and House skeptics.
+Paul vowed to vote against the bill because it included such a large debt limit increase, arguing that Congress should raise the limit in smaller increments to keep up the pressure to cut spending.
+Senate Majority Leader John Thune (R-South Dakota) insisted that his conference had a larger appetite for deficit reduction than his House colleagues did.
+Sen. Ron Johnson (R-Wisconsin) repeatedly vowed that the bill would not pass without deeper spending cuts. Instead, the Senate Finance Committee wrote a bill hundreds of billions of dollars more expensive than the House’s, and more punitive toward Medicaid.
+That sent Tillis to the floor outraged with his party over he what he described as a betrayal of constituents on the federal health insurance program.
+“The effect of this bill is to break a promise,” Tillis bellowed Sunday on the Senate floor.
+“What do I tell 663,000 people in two years or three years,” he added, “when President Trump breaks his promise by pushing them off of Medicaid because the funding’s not there anymore?”
+Emily Davies, Mariana Alfaro, Paul Kane and Dylan Wells contributed to this report.
+    "#
+    dateString #"
+      2025-07-02
+    "#
+  }
+}
